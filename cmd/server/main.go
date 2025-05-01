@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/Olt-Kondirolli91/healthcare-api/internal/config"
 	"github.com/Olt-Kondirolli91/healthcare-api/internal/database"
 	"github.com/Olt-Kondirolli91/healthcare-api/internal/handlers"
@@ -17,6 +19,12 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
+
+	router.GET("/", func(c *gin.Context) {
+        c.String(http.StatusOK, "Welcome to Healthcare Appointment System")
+    })
+
+	
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
 

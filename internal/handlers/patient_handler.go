@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/Olt-Kondirolli91/healthcare-api/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -35,10 +37,16 @@ func createPatient(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if err := db.Create(&p).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "insert failed"})
+		if err := db.Omit("id").Create(&p).Error; err != nil {
+			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+				c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
+				return
+			}
+			logrus.Errorf("createPatient: db.Create error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		c.JSON(http.StatusCreated, p)
 	}
 }

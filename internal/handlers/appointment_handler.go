@@ -74,7 +74,8 @@ func getAppointment(db *gorm.DB) gin.HandlerFunc {
 func updateAppointment(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var a models.Appointment
-		if err := db.First(&a, c.Param("id")).Error; err != nil {
+		id := c.Param("id")
+		if err := db.First(&a, id).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "appointment not found"})
 			return
 		}
@@ -83,16 +84,29 @@ func updateAppointment(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		db.Save(&a)
-		c.JSON(http.StatusOK, a)
+		c.JSON(http.StatusOK, gin.H{
+			"message":     "Appointment updated successfully",
+			"appointment": a,
+		})
 	}
 }
 
 func deleteAppointment(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := db.Delete(&models.Appointment{}, c.Param("id")).Error; err != nil {
+		id := c.Param("id")
+		var a models.Appointment
+		if err := db.First(&a, id).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "appointment not found"})
+			return
+		}
+
+		if err := db.Delete(&models.Appointment{}, id).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "delete failed"})
 			return
 		}
-		c.Status(http.StatusNoContent)
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Appointment deleted successfully",
+			"id":      id,
+		})
 	}
 }

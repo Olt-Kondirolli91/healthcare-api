@@ -66,7 +66,8 @@ func getPatient(db *gorm.DB) gin.HandlerFunc {
 func updatePatient(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var p models.Patient
-		if err := db.First(&p, c.Param("id")).Error; err != nil {
+		id := c.Param("id")
+		if err := db.First(&p, id).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
 			return
 		}
@@ -75,16 +76,29 @@ func updatePatient(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		db.Save(&p)
-		c.JSON(http.StatusOK, p)
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Patient updated successfully",
+			"patient": p,
+		})
 	}
 }
 
 func deletePatient(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := db.Delete(&models.Patient{}, c.Param("id")).Error; err != nil {
+		id := c.Param("id")
+		var p models.Patient
+		if err := db.First(&p, id).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
+			return
+		}
+
+		if err := db.Delete(&models.Patient{}, id).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "delete failed"})
 			return
 		}
-		c.Status(http.StatusNoContent)
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Patient deleted successfully",
+			"id":      id,
+		})
 	}
 }

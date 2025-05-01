@@ -1,0 +1,16 @@
+services:
+  healthcare-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthcare-api
+    ports:
+      - "8080:8080"
+    volumes:
+      - healthcare_data:/root
+    environment:
+      - PORT=8080
+      - DATABASE_URL=healthcare-api.db
+
+volumes:
+  healthcare_data:

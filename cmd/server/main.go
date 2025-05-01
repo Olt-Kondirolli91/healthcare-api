@@ -17,16 +17,16 @@ func main() {
 	db := database.Connect(cfg.DB)
 	database.AutoMigrate(db)
 
+	// Seed initial data for testing
+	database.SeedData(db)
+
 	router := gin.New()
 	router.Use(gin.Recovery())
-
-	router.GET("/", func(c *gin.Context) {
-        c.String(http.StatusOK, "Welcome to Healthcare Appointment System")
-    })
-
-	
 	router.Use(gin.Logger())
 	router.Use(cors.Default())
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Welcome to Healthcare Appointment System")
+	})
 
 	handlers.RegisterPatientRoutes(router, db)
 	handlers.RegisterAppointmentRoutes(router, db)
